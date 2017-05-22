@@ -1,0 +1,24 @@
+{
+  "name": "433_clickall_server",
+  "version": "1.0.0",
+  "description": "433Mhz Multitrack click emmiting for orchestra musicians server side software. ",
+  "main": "run_click_server.js",
+  "scripts": {
+    "test": "start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chivilis/433ClickAll.git"
+  },
+  "author": "Marius Civilis",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/chivilis/433ClickAll/issues"
+  },
+  "homepage": "https://github.com/chivilis/433ClickAll#readme",
+  "dependencies": {
+    "midi-file": "^1.0.2",
+    "node-osc": "^2.1.0",
+    "electron": "^1.6.8"
+  }
+}
