@@ -17,8 +17,13 @@
   },
   "homepage": "https://github.com/chivilis/433ClickAll#readme",
   "dependencies": {
+    "audio-analyser": "^1.0.2",
+    "audio-buffer-utils": "^5.0.1",
+    "audio-loader": "^1.0.3",
+    "chart": "^0.1.2",
+    "electron": "^1.6.8",
     "midi-file": "^1.0.2",
     "node-osc": "^2.1.0",
-    "electron": "^1.6.8"
+    "p5": "^0.5.10"
   }
 }

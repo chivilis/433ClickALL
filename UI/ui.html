@@ -2,143 +2,85 @@
 <html>
   <head>
     <meta charset="UTF-8">
-      
+      <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+      <script src='../lib/p5/p5.min.js'></script>
+      <script src='../lib/p5/p5.sound.min.js'></script>
+      <script src="../lib/wavesurfer.js"></script><!--
+      <script src='https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.10/addons/p5.sound.min.js
+                   '></script>-->
       <!--
-        <script src="..\node_modules\osc\dist\osc-browser.min.js"></script>
-      -->
-      
-      <!--
-      <script src='..\node_modules\midifile\dist\MIDIFile.js'></script>
+      <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/0.2.0/Chart.min.js" type="text/javascript"'></script>
       -->
     <title></title>
   </head>
   <body>
- ___
+    <!--<canvas id="myChart" width="400" height="400"></canvas>-->
+      <div id="waveform"></div>
   </body>
     
 </html>
 
 <script>
+    let fs = require('fs');
+    let util = require('audio-buffer-utils');
+    //LUNCH MIDI MODULES
+    //require('./midi.js');
+
+    //LUNCH OSC MODULES
+    //require('./osc.js');
     
-    //var MIDIFile = require('midifile')
-    var parseMidi = require('midi-file').parseMidi
-    var fs = require('fs')
     
-    var MidiTrack = function(buffer){
-        filteredMidi = {
-            trackName: [],
-            notes: []
-        };        
+    var wavesurfer = WaveSurfer.create({
+        container: '#waveform',
+        waveColor: 'violet',
+        progressColor: 'purple'
+    }); 
+    wavesurfer.load('../assets/click.wav');
+    //console.log(wavesurfer)
+    
+    
+    
+    
+    var song, analyzer;
+
+    function preload() {
+        song = loadSound('../assets/click.wav');
+        //console.dir(song.processPeaks)
+    }
+     
+
+    function setup() {
+        createCanvas(710, 200);
+        //song.play();
+        // create a new Amplitude analyzer
+        analyzer = new p5.Amplitude();
         
-        buffer.tracks[buffer.tracks.length-1].map(function(ev) {
-        try {
-            if(ev.type === 'trackName') {
-                filteredMidi.trackName.push(ev.text)
-            } else if(ev.type === 'noteOn') {
-                filteredMidi.notes.push(
-                    {
-                        'note': ev.noteNumber,
-                        'velocity': ev.velocity,
-                        'deltaTime': ev.deltaTime
-                        // FIXME -> MAKING MIDI INFO TRACKS
-                    }
-                );
-            }
-        }
-        catch(err) {
-            console.log('no property type')
-        }
-    })
-        
-        return filteredMidi;
+        // Patch the input to an volume analyzer
+        analyzer.setInput(song);
+        //console.log(analyzer)
     }
     
     
-    // load midi buffer
-    var input = fs.readFileSync('./assets/test1.mid');
-    var parsedMidi = parseMidi(input);
-    
-    var filteredMidi = new MidiTrack(parsedMidi)
-    console.log(filteredMidi)
-    
-    
-    console.log(parsedMidi)
-    
-    /*
-    console.log(parsedMidi);
-    
-    // filter note events    
-    var targetTrack = parsedMidi.tracks.length -1;
-    //console.log(targetTrack)
-   
-    var trackName = null;
-    
-    parsedMidi.tracks[targetTrack].map(function(ev) {
-        try {
-            if(ev.type === 'trackName') trackName = ev.text
-            else if(ev.type === 'noteOn') console.log(ev.noteNumber)
-            
+
+    function draw() {
+      background(255);
+        //console.log(this)
+      // Get the average (root mean square) amplitude
+      var rms = analyzer.getLevel();
+        _tempRms = 0;
+        if(rms > 0.1) {
+            _tempRms = rms;
         }
-        catch(err) {
-            console.log('no property type')
-        }
-    })
-    console.log(trackName)
-    */
-    
-    
-    
-// Creating the MIDIFile instance 
-    //var midiFile = new MIDIFile(input);
-   // console.log(midiFile)
- /*
-// Reading headers 
-midiFile.header.getFormat(); // 0, 1 or 2 
-midiFile.header.getTracksCount(); // n 
-// Time division 
-if(midiFile.header.getTimeDivision() === MIDIFileHeader.TICKS_PER_BEAT) {
-    midiFile.header.getTicksPerBit();
-} else {
-    midiFile.header.getSMPTEFrames();
-    midiFile.header.getTicksPerFrame();
-}
- 
-// MIDI events retriever 
-var events = midiFile.getMidiEvents();
-events[0].subtype; // type of [MIDI event](https://github.com/nfroidure/MIDIFile/blob/master/src/MIDIFile.js#L34) 
-events[0].playTime; // time in ms at wich the event must be played 
-events[0].param1; // first parameter 
-events[0].param2; // second one 
- 
-// Lyrics retriever 
-var lyrics = midiFile.getLyrics();
-lyrics[0].playTime; // Time at wich the text must be displayed 
-lyrics[0].text; // The text content to be displayed 
- 
-// Reading whole track events and filtering them yourself 
-var trackEventsChunk = midiFile.getTrackEvents(0);
-var	events = new MIDIFile.createParser(trackEventsChunk);
-var event;
- 
-while(event=events.next()) {
-    // Printing meta events containing text only 
-    if(event.type === MIDIFile.EVENT_META && event.text) {
-        console.log('Text meta: '+event.text);
+      fill(127);
+      stroke(0);
+
+      // Draw an ellipse with size based on volume
+      ellipse(width/2, height/2, 10+_tempRms*200, 10+_tempRms*200);
     }
-}
-*/
-    var osc = require('node-osc');
     
-    var client = new osc.Client('192.168.8.100', 3334);
-        client.send('f/tempo/raw', 11, function () {
-            client.kill();
-        });
     
-    var oscServer = new osc.Server(3333, '127.0.0.1');
-    oscServer.on("message", function (msg, rinfo) {
-        //if(msg[2][0] == '/tempo') {
-            console.log(msg[2][0]);      
-        //}
-      
-    });
+    
+    
+
+    
 </script>
