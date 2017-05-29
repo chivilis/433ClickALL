@@ -37,8 +37,8 @@
     }); 
     wavesurfer.load('../assets/click.wav');
     //console.log(wavesurfer)
-    
-    
+    //console.log(wavesurfer)
+    //wavesurfer._playAudioLikeBuffer();
     
     
     var song, analyzer;
@@ -58,8 +58,21 @@
         // Patch the input to an volume analyzer
         analyzer.setInput(song);
         //console.log(analyzer)
+        //console.log(getRandomIntInclusive(0, 255));
+        console.log(wavesurfer)
     }
     
+    
+    function getRandomIntInclusive(min, max) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        var rgb = {
+            r: Math.floor(Math.random() * (max - min + 1)) + min,
+            g: Math.floor(Math.random() * (max - min + 1)) + min,
+            b: Math.floor(Math.random() * (max - min + 1)) + min
+        }
+        return rgb;
+    }
     
 
     function draw() {
