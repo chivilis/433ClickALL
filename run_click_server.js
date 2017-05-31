@@ -22,6 +22,11 @@ function createWindow () {
 
   // Open the DevTools.
   win.webContents.openDevTools()
+    console.log(process.hrtime())
+    console.log(process.hrtime())
+    console.log(process.hrtime())
+    console.log(process.hrtime())
+    
 
   // Emitted when the window is closed.
   win.on('closed', () => {

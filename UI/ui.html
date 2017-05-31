@@ -5,7 +5,8 @@
       <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
       <script src='../lib/p5/p5.min.js'></script>
       <script src='../lib/p5/p5.sound.min.js'></script>
-      <script src="../lib/wavesurfer.js"></script><!--
+      <script src="../lib/wavesurfer.js"></script>
+      <script src="../lib/flipclock.js"></script><!--
       <script src='https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.10/addons/p5.sound.min.js
                    '></script>-->
       <!--
@@ -16,6 +17,7 @@
   <body>
     <!--<canvas id="myChart" width="400" height="400"></canvas>-->
       <div id="waveform"></div>
+      <div style='position:relative; height:100px;width:100px;' id='test_blinker'></div>
   </body>
     
 </html>
@@ -35,7 +37,7 @@
         waveColor: 'violet',
         progressColor: 'purple'
     }); 
-    wavesurfer.load('../assets/click.wav');
+    wavesurfer.load('../assets/test.wav');
     //console.log(wavesurfer)
     //console.log(wavesurfer)
     //wavesurfer._playAudioLikeBuffer();
@@ -44,14 +46,14 @@
     var song, analyzer;
 
     function preload() {
-        song = loadSound('../assets/click.wav');
+        song = loadSound('../assets/test.wav');
         //console.dir(song.processPeaks)
     }
      
 
     function setup() {
         createCanvas(710, 200);
-        //song.play();
+        song.play();
         // create a new Amplitude analyzer
         analyzer = new p5.Amplitude();
         
@@ -59,7 +61,9 @@
         analyzer.setInput(song);
         //console.log(analyzer)
         //console.log(getRandomIntInclusive(0, 255));
-        console.log(wavesurfer)
+        //console.log(wavesurfer)
+        
+        
     }
     
     
