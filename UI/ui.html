@@ -6,7 +6,7 @@
       <script src='../lib/p5/p5.min.js'></script>
       <script src='../lib/p5/p5.sound.min.js'></script>
       <script src="../lib/wavesurfer.js"></script>
-      <script src="../lib/flipclock.js"></script><!--
+     <!--
       <script src='https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.10/addons/p5.sound.min.js
                    '></script>-->
       <!--
@@ -17,7 +17,11 @@
   <body>
     <!--<canvas id="myChart" width="400" height="400"></canvas>-->
       <div id="waveform"></div>
-      <div style='position:relative; height:100px;width:100px;' id='test_blinker'></div>
+      <div id="waveform2"></div>
+      <div id="container" style='display-inline'>
+      <div id='test_blinker' style= 'position:relative; height:100px;width:100px;' ></div>
+      <div id='test_blinker2' style= 'position:relative; height:100px;width:100px;' ></div>
+      </div>
   </body>
     
 </html>
@@ -26,34 +30,78 @@
     let fs = require('fs');
     let util = require('audio-buffer-utils');
     //LUNCH MIDI MODULES
-    //require('./midi.js');
+    require('./midi.js');
+    let smt = require('node-smt')
 
     //LUNCH OSC MODULES
     //require('./osc.js');
     
-    
+    /*
     var wavesurfer = WaveSurfer.create({
         container: '#waveform',
-        waveColor: 'violet',
+        waveColor: 'grey',
         progressColor: 'purple'
-    }); 
-    wavesurfer.load('../assets/test.wav');
-    //console.log(wavesurfer)
-    //console.log(wavesurfer)
-    //wavesurfer._playAudioLikeBuffer();
+    });
+    
+    var wavesurfer2 = WaveSurfer.create({
+        container: '#waveform2',
+        waveColor: 'grey',
+        progressColor: 'purple'
+    });
+    
+    wavesurfer.load('../assets/click.wav');
+    wavesurfer2.load('../assets/test.wav');
+    */
+    
+    var tempoTrack = fs.readFileSync('./assets/tempoTrackCB.smt');
+    //console.log(smt(tempoTrack))
+    
+    
+    xml2js = require('xml2js');
+ 
+    var parser = new xml2js.Parser(
+        {
+            trim: true,
+            normalize: true,
+            mergeAttrs: true
+        });
+    fs.readFile('./assets/tempoTrackCB.smt', function(err, data) {
+        parser.parseString(data, function (err, result) {
+            console.dir(result);
+            console.log('Done');
+        });
+    });
+    
+    
+    
+    var MidiPlayer = require('midi-player-js');
+
+    // Initialize player and register event handler
+    var Player = new MidiPlayer.Player();
+
+    // Load a MIDI file
+    Player.loadFile('./assets/test1.mid');
+    Player.play();
+    setInterval(function() {
+        Player.getSongTimeRemaining()>0 ? console.log(Player.getSongTimeRemaining()) : console.log('not av')
+    }, 1000)
+    
+    //console.log(Player.isPlaying())
     
     
     var song, analyzer;
 
     function preload() {
-        song = loadSound('../assets/test.wav');
-        //console.dir(song.processPeaks)
+        song = loadSound('../assets/click.wav');
+        song2 = loadSound('../assets/test.wav');
     }
      
 
     function setup() {
         createCanvas(710, 200);
-        song.play();
+        //song.play()
+        //song2.play()
+        
         // create a new Amplitude analyzer
         analyzer = new p5.Amplitude();
         
@@ -64,18 +112,6 @@
         //console.log(wavesurfer)
         
         
-    }
-    
-    
-    function getRandomIntInclusive(min, max) {
-        min = Math.ceil(min);
-        max = Math.floor(max);
-        var rgb = {
-            r: Math.floor(Math.random() * (max - min + 1)) + min,
-            g: Math.floor(Math.random() * (max - min + 1)) + min,
-            b: Math.floor(Math.random() * (max - min + 1)) + min
-        }
-        return rgb;
     }
     
 
