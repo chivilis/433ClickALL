@@ -2,10 +2,14 @@
 <html>
   <head>
     <meta charset="UTF-8">
-      <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>
+      <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+      <link href="./stylesheet.css" rel="stylesheet">
+      <script src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js'></script>
       <script src='../lib/p5/p5.min.js'></script>
       <script src='../lib/p5/p5.sound.min.js'></script>
-      <script src="../lib/wavesurfer.js"></script>
+      <!--<script src="../lib/wave-decoder.js"></script>-->
      <!--
       <script src='https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.10/addons/p5.sound.min.js
                    '></script>-->
@@ -14,45 +18,365 @@
       -->
     <title></title>
   </head>
+    
   <body>
+      <div id='waveform'></div>
+      
+  <!--    
+  <div class="container-fluid"> 
+            <div class="row">
+                <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
+                    <a href="#">About</a>
+                </div>
+                <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
+                    aaaa
+                </div>
+                <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
+                    <a href="#myModal1" data-toggle="modal">SHARE</a>
+                </div>
+                <div class="row content-row">
+                    <div class="col-xs-10 col-sm-10 col-md-10 col-lg-10">VVV</div>
+                    <div class="col-xs-2 col-sm-2 col-md-2 col-lg-2">CCC</div>
+                </div>
+            </div>
+        </div>
+-->
     <!--<canvas id="myChart" width="400" height="400"></canvas>-->
+      <!--
       <div id="waveform"></div>
       <div id="waveform2"></div>
-      <div id="container" style='display-inline'>
+    -->
+      <div class="jumbotron" id='nav'>
+        <a onclick='openFiles()'>open...</a>  
+      </div>
+      <div class="container" id="main-container">
+          
+    <!--  
       <div id='test_blinker' style= 'position:relative; height:100px;width:100px;' ></div>
       <div id='test_blinker2' style= 'position:relative; height:100px;width:100px;' ></div>
+        -->  
+          <div class="row under-nav-row"></div>
+
+          <div class="row content-row footer navbar-fixed-bottom">
+            <div id="tracks-container" class="col-xs-10 col-sm-10 col-md-10 col-lg-10">WORK</div>
+            <!--
+            <div class="col-xs-2 col-sm-2 col-md-2 col-lg-2">SUDAA</div>
+            -->
+          </div>
       </div>
+    
+
+      
   </body>
     
 </html>
 
 <script>
-    let fs = require('fs');
+    const fs = require('fs');
+    const parseMidi = require('midi-file').parseMidi;
+    const {dialog} = require('electron').remote;
+    const WaveSurfer = require('../lib/wavesurfer_BACKUP');
+    
+    class Wave2Midi {
+        constructor(fileURL) {
+            this.wavesurfer = WaveSurfer.create({
+                container: '#waveform',
+                waveColor: 'grey',
+                progressColor: 'purple'
+            });
+            self = this;
+            this.wavesurfer.load('../assets/test.wav')
+            
+            this.wavesurfer.on('ready', function() {
+                self._playAudioLikeBuffer();
+                self.fTime = self.fullTime;
+                
+                /* BUILD MIDI FILE */
+                
+                //self.destroy();
+            });
+            self = null;
+        }
+    }
+    
+    class Track {
+        constructor(trackURL) {
+            
+            this.data = this.parseFileData(trackURL);
+            this.URL = trackURL;
+                
+            return this;
+        }  
+        parseFileData(trackURL) {
+            let _tempBuffer = fs.readFileSync(trackURL);
+            let ext = trackURL.split('.').pop();
+            switch(ext) {
+                case 'mid':
+                    return parseMidi(_tempBuffer);
+                case 'wav':
+                    return new Wave2Midi(trackURL);
+                case 'smt':
+                    return 'smt';
+                default: return false;
+            }
+        }
+    }
+    
+    class UI {
+        isTracksWindowEmpty() {
+            let tracksContainer = $('#tracks-container');
+            tracksContainer.innerHTML > 0 ? null : tracksContainer.append('<p>no data</p>')
+            //console.log(tracksContainer)
+        }
+        constructor() {
+            this.nav = document.createElement('div');
+            this.nav.className = 'testClass';
+            //console.log(this.nav)
+            this.isTracksWindowEmpty()
+        }
+        
+        
+    }
+    
+     
+    
+    //ON DOM READY
+    $(document).ready(function() {
+        //new UI();
+        
+        openFiles = function() {
+            dialog.showOpenDialog({properties: ['openFile', 'multiSelections']}, function(fileURL) {
+                for(var URL in fileURL) {
+                    var T = new Track(fileURL[URL]);
+                    console.log(T)
+                }
+            });
+        }
+        
+        //var T = new Track('./assets/test.wav')
+    })
+    
+    //require('./midi.js');
+    /*
+    
     let util = require('audio-buffer-utils');
     //LUNCH MIDI MODULES
-    require('./midi.js');
+    
     let smt = require('node-smt')
-
+    */
     //LUNCH OSC MODULES
     //require('./osc.js');
     
-    /*
-    var wavesurfer = WaveSurfer.create({
-        container: '#waveform',
-        waveColor: 'grey',
-        progressColor: 'purple'
-    });
+
+/*
+var file;
+var source_file; // sound file
+var src_length; // hold its duration
+
+var fft;
+
+var pg; // to draw waveform
+
+var playing = false;
+var button;
+
+// detectors
+var onsetLow,beatLow;
+var onsetLowMid,beatLowMid;
+var onsetMid, beatMid;
+
+
+
+function preload(){
+    sourcefile = loadSound(file); // preload the sound
+}
+
+function setup() {
+    source_file = loadSound('./assets/click.wav')
+  createCanvas(windowWidth, 250);
+  textAlign(CENTER);
+
+  src_length = source_file.duration();
+  source_file.playMode('restart'); 
+  println("source duration: " +src_length);
+
+  // draw the waveform to an off-screen graphic
+  var peaks = source_file.getPeaks(); // get an array of peaks
+  pg = createGraphics(width,150);
+  pg.background(100);
+  pg.translate(0,75);
+  pg.noFill();
+  pg.stroke(0);
+  for (var i = 0 ; i < peaks.length ; i++){
+        var x = map(i,0,peaks.length,0,width);
+        var y = map(peaks[i],0,1,0,150);
+          pg.line(x,0,x,y);
+          pg.line(x,0,x,-y);
+   }
+
+
+    // FFT
+   fft = new p5.FFT();
+
+   // instanciation of onset and beat detection from fft
+   // low band : 40Hz-120Hz
+   onsetLow = new OnsetDetect(40,120,"bass",0.025);
+   beatLow = new BeatDetect(40,120,"bass",0.7);
+   // lowMid band : 140Hz-400Hz
+   onsetLowMid = new OnsetDetect(140,400,"lowMid",0.025);
+   beatLowMid = new BeatDetect(140,400,"lowMid",0.7);
+   // mid band : 400Hz-2.6kHz
+   onsetMid = new OnsetDetect(400,2600,"Mid",0.025);
+   beatMid = new BeatDetect(400,2600,"Mid",0.7);
+
+
+    // gui
+   button = createButton('play');
+   button.position(3, 3);
+   button.mousePressed(play);
+}
+
+
+
+function mouseClicked(){
+    if(mouseY>100 && mouseY<350){       
+        var playpos = constrain(map(mouseX,0,windowWidth,0,src_length),0,src_length);   
+        source_file.play(); 
+        source_file.play(0,1,1,playpos,src_length); 
+        playing = true;
+        button.html('pause');       
+    }   
+    return false;//callback for p5js
+}
+
+function keyTyped(){
+    if (key == ' '){
+        play();
+    }
+    return false; // callback for p5js
+}
+
+function play(){
+    if(playing){
+        source_file.pause();
+        button.html('play');
+        playing = false;
+    }
+    else{
+        source_file.play();
+        button.html('pause');
+        playing = true;
+    }   
+}
+
+
+function OnsetDetect(f1,f2,str,thresh){
+    this.isDetected = false;
+    this.f1=f1;
+    this.f2=f2;
+    this.str = str;
+    this.treshold = thresh;
+    this.energy = 0;
+    this.penergy =0;
+    this.siz = 10;
+    this.sensitivity = 500;
+}
+
+OnsetDetect.prototype.display = function(x,y) {
+
+    if(this.isDetected == true){
+        this.siz = lerp(this.siz,40,0.99);
+    }
+    else if (this.isDetected == false){
+        this.siz = lerp(this.siz,15,0.99);
+    }
+    fill(255,0,0);
+    ellipse(x,y,this.siz,this.siz);
+    fill(0);
+    text(this.str,x,y);
+    text("( "+this.f1+" - "+this.f2+"Hz )",x,y+10);
+}
+
+OnsetDetect.prototype.update = function(fftObject) {
+    this.energy = fftObject.getEnergy(this.f1,this.f2)/255;
+
+    if(this.isDetected == false){
+        if (this.energy-this.penergy > this.treshold){
+            this.isDetected = true;
+            var self = this;
+            setTimeout(function () {
+                self.isDetected = false;
+            },this.sensitivity);
+        }
+    }
+
+    this.penergy = this.energy;
+
+}
+
+
+function BeatDetect(f1,f2,str,thresh){
+    this.isDetected = false;
+    this.f1=f1;
+    this.f2=f2;
+    this.str = str;
+    this.treshold = thresh;
+    this.energy = 0;
+
+    this.siz = 10;
+    this.sensitivity = 500;
+}
+
+BeatDetect.prototype.display = function(x,y) {
+
+    if(this.isDetected == true){
+        this.siz = lerp(this.siz,40,0.99);
+    }
+    else if (this.isDetected == false){
+        this.siz = lerp(this.siz,15,0.99);
+    }
+    fill(255,0,0);
+    ellipse(x,y,this.siz,this.siz);
+    fill(0);
+    text(this.str,x,y);
+    text("( "+this.f1+" - "+this.f2+"Hz )",x,y+10);
+}
+
+BeatDetect.prototype.update = function(fftObject) {
+    this.energy = fftObject.getEnergy(this.f1,this.f2)/255;
+
+    if(this.isDetected == false){
+        if (this.energy > this.treshold){
+            this.isDetected = true;
+            var self = this;
+            setTimeout(function () {
+                self.isDetected = false;
+            },this.sensitivity);
+        }
+    }   
+}
+   */   
     
+   
+    
+   
+    
+        
+    
+    
+    /*
     var wavesurfer2 = WaveSurfer.create({
         container: '#waveform2',
         waveColor: 'grey',
         progressColor: 'purple'
     });
     
-    wavesurfer.load('../assets/click.wav');
+    
     wavesurfer2.load('../assets/test.wav');
     */
     
+    
+    /* START HERE
     var tempoTrack = fs.readFileSync('./assets/tempoTrackCB.smt');
     //console.log(smt(tempoTrack))
     
@@ -73,7 +397,8 @@
     });
     
     
-    
+    */
+    /*
     var MidiPlayer = require('midi-player-js');
 
     // Initialize player and register event handler
@@ -85,10 +410,10 @@
     setInterval(function() {
         Player.getSongTimeRemaining()>0 ? console.log(Player.getSongTimeRemaining()) : console.log('not av')
     }, 1000)
-    
+    */
     //console.log(Player.isPlaying())
     
-    
+    /*
     var song, analyzer;
 
     function preload() {
@@ -131,7 +456,7 @@
       ellipse(width/2, height/2, 10+_tempRms*200, 10+_tempRms*200);
     }
     
-    
+    */
     
     
 

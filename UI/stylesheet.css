@@ -1,0 +1,27 @@
+html {
+    ;
+}
+body {
+    height: 100%;
+    background-color: black;
+}
+#main-container {
+    background-color: black;
+}
+.content-row {
+    height: 70%;
+}
+.content-row div {
+     background-color: white;
+}
+#tracks-container {
+    height: 100%;
+    border: 2px solid red;
+}
+.jumbotron {
+    background-color: #0e0e0e;
+}
+.jumbotron a {
+    margin-left: 1%;
+    margin-right: 1%;
+}
