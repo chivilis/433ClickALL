@@ -76,6 +76,9 @@
     const parseMidi = require('midi-file').parseMidi;
     const {dialog} = require('electron').remote;
     const WaveSurfer = require('../lib/wavesurfer_BACKUP');
+    const xml2js = require('xml2js');
+ 
+    
     
     class Wave2Midi {
         constructor(fileURL) {
@@ -84,27 +87,25 @@
                 waveColor: 'grey',
                 progressColor: 'purple'
             });
-            self = this;
-            this.wavesurfer.load('../assets/test.wav')
             
+            this.wavesurfer.load('../assets/test.wav');
+            self = this;
             this.wavesurfer.on('ready', function() {
                 self._playAudioLikeBuffer();
                 self.fTime = self.fullTime;
                 
                 /* BUILD MIDI FILE */
-                
-                //self.destroy();
+                console.log(self);
+                //self.destroy();            
             });
-            self = null;
         }
     }
     
     class Track {
         constructor(trackURL) {
-            
             this.data = this.parseFileData(trackURL);
             this.URL = trackURL;
-                
+            
             return this;
         }  
         parseFileData(trackURL) {
@@ -116,7 +117,17 @@
                 case 'wav':
                     return new Wave2Midi(trackURL);
                 case 'smt':
-                    return 'smt';
+                    let parser = new xml2js.Parser({
+                        trim: true,
+                        normalize: true,
+                        mergeAttrs: true
+                    });
+                    parser.parseString(_tempBuffer, function (err, result) {
+                        console.log(result);
+                    });
+                    
+                    
+                    return _tempBuffer;
                 default: return false;
             }
         }
@@ -143,7 +154,7 @@
     //ON DOM READY
     $(document).ready(function() {
         //new UI();
-        
+        /*
         openFiles = function() {
             dialog.showOpenDialog({properties: ['openFile', 'multiSelections']}, function(fileURL) {
                 for(var URL in fileURL) {
@@ -152,9 +163,9 @@
                 }
             });
         }
-        
-        //var T = new Track('./assets/test.wav')
-    })
+        */
+        var T = new Track('./assets/test.wav')
+    });
     
     //require('./midi.js');
     /*
