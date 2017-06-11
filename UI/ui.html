@@ -41,13 +41,15 @@
             </div>
         </div>
 -->
-    <!--<canvas id="myChart" width="400" height="400"></canvas>-->
       <!--
       <div id="waveform"></div>
       <div id="waveform2"></div>
     -->
       <div class="jumbotron" id='nav'>
-        <a onclick='openFiles()'>open...</a>  
+        <a onclick='openFiles(stack)'>open...</a>  
+        <a onclick='test(stack)'>test</a>  
+        <a onclick='play1(stack)'>PLAY1</a>  
+        <a onclick='playAll(stack)'>PLAY_ALL</a>  
       </div>
       <div class="container" id="main-container">
           
@@ -74,11 +76,19 @@
 <script>
     const fs = require('fs');
     const parseMidi = require('midi-file').parseMidi;
+    const writeMidi = require('midi-file').writeMidi;
     const {dialog} = require('electron').remote;
     const WaveSurfer = require('../lib/wavesurfer_BACKUP');
     const xml2js = require('xml2js');
- 
+    const midiPlayer = require('midi-player-js');
+    const WatchJS = require("watchjs")
+    const watch = WatchJS.watch;
+    const unwatch = WatchJS.unwatch;
+    const callWatchers = WatchJS.callWatchers;
     
+    
+
+
     
     class Wave2Midi {
         constructor(fileURL) {
@@ -95,7 +105,7 @@
                 self.fTime = self.fullTime;
                 
                 /* BUILD MIDI FILE */
-                console.log(self);
+                //console.log(self);
                 //self.destroy();            
             });
         }
@@ -105,7 +115,7 @@
         constructor(trackURL) {
             this.data = this.parseFileData(trackURL);
             this.URL = trackURL;
-            
+            if(!this.data) return false;
             return this;
         }  
         parseFileData(trackURL) {
@@ -113,58 +123,119 @@
             let ext = trackURL.split('.').pop();
             switch(ext) {
                 case 'mid':
-                    return parseMidi(_tempBuffer);
+                    let midiData = parseMidi(_tempBuffer);
+                    if(midiData.header.numTracks > 1) {
+                        console.log('please use single channel midi files!');
+                        return false;
+                    }
+                    //midiData.duration = 
+                    return midiData;
                 case 'wav':
-                    return new Wave2Midi(trackURL);
+                        console.log('still dev!');
+                    return false;//new Wave2Midi(trackURL);
                 case 'smt':
+                    console.log('still dev!');
+                    return false;
                     let parser = new xml2js.Parser({
-                        trim: true,
-                        normalize: true,
-                        mergeAttrs: true
+                        //trim: true,
+                        //normalize: true,
+                        //mergeAttrs: true
                     });
                     parser.parseString(_tempBuffer, function (err, result) {
-                        console.log(result);
+                        console.log(result)
                     });
-                    
-                    
                     return _tempBuffer;
+                    
                 default: return false;
             }
         }
     }
     
     class UI {
-        isTracksWindowEmpty() {
-            let tracksContainer = $('#tracks-container');
-            tracksContainer.innerHTML > 0 ? null : tracksContainer.append('<p>no data</p>')
-            //console.log(tracksContainer)
-        }
         constructor() {
-            this.nav = document.createElement('div');
-            this.nav.className = 'testClass';
-            //console.log(this.nav)
-            this.isTracksWindowEmpty()
+            return this;
         }
-        
-        
+        drawStack(_stack) {
+            let tracksContainer = $('#tracks-container');
+            
+            console.log(tracksContainer.width())
+        }
     }
     
+    class Stack {
+        constructor(options) {
+            this.tracks = [];
+            this.engines = [];
+            this.duration = null;
+            return this;
+        }
+        add2Stack(track) {
+            this.tracks.push(track);
+            
+            //LOAD2ENGINE
+            this.load2Engine(track);
+        }
+        load2Engine(_track) {
+            
+            let Player = new midiPlayer.Player(function(e) {
+                console.log(e);
+            });
+            Player.loadFile(_track.URL);
+            
+            //SET STACK DURATION
+            this.duration ? null : this.duration = Player.getSongTime();
+            this.engines.push(Player);
+        }
+        getFromStack() {
+            console.log(this)
+        }
+    }
      
+    var stack = new Stack();
+    var ui = new UI();
     
+    /*
+     stack.watch('tracks', function(change) {
+            console.log(change)
+        })
+    */  
     //ON DOM READY
     $(document).ready(function() {
-        //new UI();
-        /*
-        openFiles = function() {
+        //LUNCH STACK OBSERVER        
+        watch(stack, function(d){
+            //WATCH STACK FOR UI
+            //console.log(d)
+            ui.drawStack(stack);
+            
+        });
+        
+        openFiles = function(stack) {
+            var _stack = stack;
             dialog.showOpenDialog({properties: ['openFile', 'multiSelections']}, function(fileURL) {
-                for(var URL in fileURL) {
-                    var T = new Track(fileURL[URL]);
-                    console.log(T)
+                for(var URL in fileURL) { 
+                    let _tempTrack = new Track(fileURL[URL]);
+                    if(!_tempTrack.data) {
+                        continue;
+                    }
+                    _stack.add2Stack(_tempTrack);
                 }
             });
         }
-        */
-        var T = new Track('./assets/test.wav')
+        
+        test = function(_stack) {
+            _stack.getFromStack();
+        }
+        
+        play1 = function(_stack) {
+            _stack.engines[0].play();
+        }
+        
+        playAll = function(_stack) {
+            _stack.engines.forEach(function(player) {
+                player.play();
+            })
+        }
+        
     });
     
     //require('./midi.js');

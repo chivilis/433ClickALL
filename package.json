@@ -28,7 +28,9 @@
     "nanotimer": "^0.3.14",
     "node-osc": "^2.1.0",
     "node-smt": "0.0.1",
+    "object.observe": "^0.2.6",
     "p5": "^0.5.10",
+    "watchjs": "0.0.0",
     "xml2js": "^0.4.17"
   }
 }
