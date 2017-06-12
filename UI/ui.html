@@ -50,6 +50,7 @@
         <a onclick='test(stack)'>test</a>  
         <a onclick='play1(stack)'>PLAY1</a>  
         <a onclick='playAll(stack)'>PLAY_ALL</a>  
+        <a onclick='removeTrack(stack)'>RM</a>  
       </div>
       <div class="container" id="main-container">
           
@@ -156,9 +157,31 @@
             return this;
         }
         drawStack(_stack) {
-            let tracksContainer = $('#tracks-container');
+            let htmlStructure = 
+            {
+                divOpening: '<div style="border:1px solid black; background-color:burlywood;text-align:center;" class="row">',  
+                divClosing: '</div>',
+                selectBtn: '<input type="radio">'
+            };
             
-            console.log(tracksContainer.width())
+            let tracksContainer = $('#tracks-container');
+            let htmlTracks = [];
+            for(let track in _stack.tracks) {
+                htmlTracks.push(
+                    `${htmlStructure.divOpening}` +
+                    `${htmlStructure.selectBtn}` +
+                    _stack.tracks[track].toString() +
+                    `${htmlStructure.divClosing}`
+                );
+            }
+            
+            tracksContainer[0].innerHTML = '';
+            let htmlString = '';
+            for(let el in htmlTracks) {
+                htmlString += htmlTracks[el];
+            }
+            tracksContainer[0].innerHTML = htmlString;
+            console.log(_stack)
         }
     }
     
@@ -201,7 +224,8 @@
     */  
     //ON DOM READY
     $(document).ready(function() {
-        //LUNCH STACK OBSERVER        
+        //LUNCH STACK OBSERVER  
+        //REACTIVE UI
         watch(stack, function(d){
             //WATCH STACK FOR UI
             //console.log(d)
@@ -217,7 +241,10 @@
                     if(!_tempTrack.data) {
                         continue;
                     }
-                    _stack.add2Stack(_tempTrack);
+                    //DEV
+                    for(let i=0; i<100; i++){
+                        _stack.add2Stack(_tempTrack);
+                    }
                 }
             });
         }
@@ -234,6 +261,9 @@
             _stack.engines.forEach(function(player) {
                 player.play();
             })
+        }
+        removeTrack = function(_stack) {
+            console.log($('#tracks-container input:checked'))
         }
         
     });
