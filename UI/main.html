@@ -50,7 +50,8 @@
         <a onclick='test(stack)'>test</a>  
         <a onclick='play1(stack)'>PLAY1</a>  
         <a onclick='playAll(stack)'>PLAY_ALL</a>  
-        <a onclick='removeTrack(stack)'>RM</a>  
+        <a onclick='stack.actionWithChecked("rm")'>RM</a>  
+        <a onclick='stack.actionWithChecked("group")'>GR</a>  
       </div>
       <div class="container" id="main-container">
           
@@ -86,153 +87,25 @@
     const watch = WatchJS.watch;
     const unwatch = WatchJS.unwatch;
     const callWatchers = WatchJS.callWatchers;
-    
-    
+    const Track = require('./Track');
+    const UI = require('./UI');
+    const Stack = require('./Stack');
+    const Wave2Midi = require('./Wave2Midi');
 
-
     
-    class Wave2Midi {
-        constructor(fileURL) {
-            this.wavesurfer = WaveSurfer.create({
-                container: '#waveform',
-                waveColor: 'grey',
-                progressColor: 'purple'
-            });
-            
-            this.wavesurfer.load('../assets/test.wav');
-            self = this;
-            this.wavesurfer.on('ready', function() {
-                self._playAudioLikeBuffer();
-                self.fTime = self.fullTime;
-                
-                /* BUILD MIDI FILE */
-                //console.log(self);
-                //self.destroy();            
-            });
-        }
-    }
-    
-    class Track {
-        constructor(trackURL) {
-            this.data = this.parseFileData(trackURL);
-            this.URL = trackURL;
-            if(!this.data) return false;
-            return this;
-        }  
-        parseFileData(trackURL) {
-            let _tempBuffer = fs.readFileSync(trackURL);
-            let ext = trackURL.split('.').pop();
-            switch(ext) {
-                case 'mid':
-                    let midiData = parseMidi(_tempBuffer);
-                    if(midiData.header.numTracks > 1) {
-                        console.log('please use single channel midi files!');
-                        return false;
-                    }
-                    //midiData.duration = 
-                    return midiData;
-                case 'wav':
-                        console.log('still dev!');
-                    return false;//new Wave2Midi(trackURL);
-                case 'smt':
-                    console.log('still dev!');
-                    return false;
-                    let parser = new xml2js.Parser({
-                        //trim: true,
-                        //normalize: true,
-                        //mergeAttrs: true
-                    });
-                    parser.parseString(_tempBuffer, function (err, result) {
-                        console.log(result)
-                    });
-                    return _tempBuffer;
-                    
-                default: return false;
-            }
-        }
-    }
-    
-    class UI {
-        constructor() {
-            return this;
-        }
-        drawStack(_stack) {
-            let htmlStructure = 
-            {
-                divOpening: '<div style="border:1px solid black; background-color:burlywood;text-align:center;" class="row">',  
-                divClosing: '</div>',
-                selectBtn: '<input type="radio">'
-            };
-            
-            let tracksContainer = $('#tracks-container');
-            let htmlTracks = [];
-            for(let track in _stack.tracks) {
-                htmlTracks.push(
-                    `${htmlStructure.divOpening}` +
-                    `${htmlStructure.selectBtn}` +
-                    _stack.tracks[track].toString() +
-                    `${htmlStructure.divClosing}`
-                );
-            }
-            
-            tracksContainer[0].innerHTML = '';
-            let htmlString = '';
-            for(let el in htmlTracks) {
-                htmlString += htmlTracks[el];
-            }
-            tracksContainer[0].innerHTML = htmlString;
-            console.log(_stack)
-        }
-    }
-    
-    class Stack {
-        constructor(options) {
-            this.tracks = [];
-            this.engines = [];
-            this.duration = null;
-            return this;
-        }
-        add2Stack(track) {
-            this.tracks.push(track);
-            
-            //LOAD2ENGINE
-            this.load2Engine(track);
-        }
-        load2Engine(_track) {
-            
-            let Player = new midiPlayer.Player(function(e) {
-                console.log(e);
-            });
-            Player.loadFile(_track.URL);
-            
-            //SET STACK DURATION
-            this.duration ? null : this.duration = Player.getSongTime();
-            this.engines.push(Player);
-        }
-        getFromStack() {
-            console.log(this)
-        }
-    }
-     
     var stack = new Stack();
     var ui = new UI();
     
-    /*
-     stack.watch('tracks', function(change) {
-            console.log(change)
-        })
-    */  
     //ON DOM READY
     $(document).ready(function() {
         //LUNCH STACK OBSERVER  
         //REACTIVE UI
-        watch(stack, function(d){
-            //WATCH STACK FOR UI
-            //console.log(d)
-            ui.drawStack(stack);
-            
+        /*
+        watch(stack,'tracks', function(d){
+            //WATCH STACK FOR UI REACTIVE!!!
+            //ui.drawStack(stack);
         });
-        
+        */
         openFiles = function(stack) {
             var _stack = stack;
             dialog.showOpenDialog({properties: ['openFile', 'multiSelections']}, function(fileURL) {
@@ -241,10 +114,11 @@
                     if(!_tempTrack.data) {
                         continue;
                     }
-                    //DEV
-                    for(let i=0; i<100; i++){
-                        _stack.add2Stack(_tempTrack);
-                    }
+
+                    _stack.add2Stack(_tempTrack);
+                    
+                    //UPDATE
+                    ui.drawStack(stack);
                 }
             });
         }
@@ -262,10 +136,6 @@
                 player.play();
             })
         }
-        removeTrack = function(_stack) {
-            console.log($('#tracks-container input:checked'))
-        }
-        
     });
     
     //require('./midi.js');
