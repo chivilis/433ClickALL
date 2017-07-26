@@ -6,6 +6,7 @@
         };        
         
         buffer.tracks[buffer.tracks.length-1].map(function(ev) {
+            console.log(ev);
         try {
             if(ev.type === 'trackName') {
                 filteredMidi.trackName.push(ev.text)
@@ -17,6 +18,7 @@
                         'deltaTime': ev.deltaTime
                         // FIXME -> MAKING MIDI INFO TRACKS
                     }
+                    
                 );
             }
         }

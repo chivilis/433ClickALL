@@ -1,3 +1,5 @@
+const MainCursor = require('./MainCursor');
+
 module.exports = class Stack {
     constructor(options) {
         this.tracks = [];
@@ -26,9 +28,23 @@ module.exports = class Stack {
     load2Engine(_track) {
 
         let Player = new midiPlayer.Player(function(e) {
-            console.log(e);
+            //DBUG
+            //console.log(e);
         });
         Player.loadFile(_track.URL);
+        
+        Player.on('playing', function(e) {
+            // SEND CURSOR POSITION
+            let playedPercents = e.tick * 100 / Player.totalTicks;
+            playedPercents > 100 ? playedPercents = 0 : null;
+            
+            let args = new Object({'played': playedPercents});
+            
+            //console.log(args)
+            
+            new MainCursor(args);
+            //console.log(e);
+        });
 
         //SET STACK DURATION
         this.duration ? null : this.duration = Player.getSongTime();

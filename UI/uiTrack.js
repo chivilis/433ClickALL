@@ -7,20 +7,17 @@ module.exports = class UI_Track {
                             'class="glyphicon glyphicon-remove"></span>';
         return contentString;   
     }
-    constructor(data) {
-        
+    
+    constructor(data) {    
         let trackHTML = $('<div/>', {
                             'id': data.ID || 'err',
                             'class': 'row ui-track',
                             'style': 'border:1px solid black; background-color:burlywood;text-align:center;',
                             'html': this.trackContent(data.name()),
                             'mouseenter': function(){ $(this).css('color', 'red'); },
-                            'mouseleave': function(){ $(this).css('color', 'black'); 
-                                }
-                        });
+                            'mouseleave': function(){ $(this).css('color', 'black'); }
+        });
         
         return trackHTML;
     }
-
-    
 }
